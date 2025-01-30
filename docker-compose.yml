@@ -1,0 +1,46 @@
+services:
+  blenderproc:
+    image: vision_image_ami
+    container_name: vision_container_ami
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_VISIBLE_DEVICES=all  # Allow access to all GPUs
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics,display
+    runtime: nvidia
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+    stdin_open: true
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - ./workspace:/workspace  
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/dev/*:/dev/*"
+      - "/dev/nvidia0:/dev/nvidia0"
+      - "/dev/nvidiactl:/dev/nvidiactl"
+      - "/dev/nvidia-uvm:/dev/nvidia-uvm"
+      - "/dev/dri:/dev/dri"
+      - "/dev/shm:/dev/shm"
+
+    network_mode: host
+    shm_size: '10g'
+    ports:
+      - "8765:8765"
+    tty: true
+    security_opt:
+      - seccomp:unconfined
+    devices:
+      - "/dev/dri:/dev/dri" 
+      - "/dev/video0:/dev/video0"
+      
+    privileged: true
+    command: /usr/bin/zsh  # /bin/bash - /usr/bin/zsh
+
+    # ros2 launch camera_reader camera_launcher.launch.py

@@ -1,0 +1,12 @@
+path: \\?\D:\AMI\IoConveyor\NSHC\20250122_NHC_RGB\DataSet\Data
+train: D:\AMI\IoConveyor\NSHC\20250122_NHC_RGB\DataSet\Data\train\images
+val: D:\AMI\IoConveyor\NSHC\20250122_NHC_RGB\DataSet\Data\val\images
+test:
+
+names:
+    0: BUNDLES
+    1: PLATE
+    2: BUSHELING
+    3: P_S
+    4: SHREDDED
+    5: PIT_SCRAP
