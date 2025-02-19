@@ -13,6 +13,8 @@ from transformers import SegformerFeatureExtractor, SegformerForSemanticSegmenta
 import rerun as rr  # pip install rerun-sdk
 from rerun import AnnotationContext, AnnotationInfo 
 
+import time
+
 ######################
 # Color Palette
 ######################
@@ -155,6 +157,7 @@ def main():
     width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps    = cap.get(cv2.CAP_PROP_FPS)
+    time_per_frame = 1.0 / fps if fps > 0 else 1.0/30
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")  
     out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
@@ -162,16 +165,24 @@ def main():
     print(f"Processing video: {input_video_path}")
     print(f"Output will be saved to: {output_video_path}")
 
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    time_per_frame = 1.0 / fps if fps > 0 else 1.0/30  # fallback to 30 FPS if invalid
 
 
     frame_count = 0
+
+    start_time = time.time()  # add import time at top
+
     while True:
         ret, frame_bgr = cap.read()
         if not ret:
             break
 
         frame_count += 1
-        rr.set_time_sequence("frame", frame_count)
+        # Use real-time sequencing for proper playback speed
+        current_time = frame_count * time_per_frame
+        rr.set_time_seconds("real_time", current_time)
+
 
         # Convert BGR -> RGB -> PIL
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
@@ -226,6 +237,13 @@ def main():
 
         if frame_count % 50 == 0:
             print(f"Processed frame {frame_count}...")
+
+        if fps > 0:
+            elapsed = time.time() - start_time
+            target_time = frame_count * time_per_frame
+            sleep_time = target_time - elapsed
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
     cap.release()
     out.release()
